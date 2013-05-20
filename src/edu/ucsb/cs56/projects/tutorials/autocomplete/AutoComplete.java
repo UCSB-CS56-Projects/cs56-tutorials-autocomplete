@@ -63,6 +63,11 @@ import java.util.ArrayList;
 			buttonList.add(CRUSTY);
 			buttonList.add(CZECH);
 		}
+		/**
+		Checks to see if a JComboBox is adjusting, meaning there is a change being made to it.
+		@param cb A JComboBox used as the suggestions list
+		@return True if cb has the property "is_adjusting" set to true.
+		*/
 
 		private static boolean isAdjusting(JComboBox cb) {
         	if (cb.getClientProperty("is_adjusting") instanceof Boolean) {
@@ -70,10 +75,19 @@ import java.util.ArrayList;
         	}
         	return false;
 		}
-
+		/**
+		Gives a JComboBox the property "is_adjusting" if not already created and sets it to true or false.
+		@param cb A JComboBox used as the suggestions list
+		@param tof Used to set the "is_adjusting" property to true or false.
+		*/
+		
 		private static void setAdjusting(JComboBox cb, boolean tof) {
 			cb.putClientProperty("is_adjusting", tof);
 		}
+		
+		/**
+		Prepares all the widgets, panels, buttons, and listeners for the AutoComplete window.
+		*/
 		public void go() {
 
 			// Add options to select from search bar
@@ -139,12 +153,18 @@ import java.util.ArrayList;
 			frame.setVisible(true);
 
 		}// end go()
-
+		
+		/**
+		Sets the text inside the searchBar JTextField to the selected item in the suggestBox JComboBox.
+		*/
 		public void autoComplete() {
 			searchBar.setText(suggestBox.getSelectedItem().toString());
 			suggestBox.setPopupVisible(false);			
 		}
-
+		/**
+		Checks to see if the text inside the searchBar JTextField is equal to any of the buttons.
+		If this text matches a button, that button is clicked.
+		*/
 		public void search() {
 			String query = searchBar.getText();
 
@@ -155,7 +175,11 @@ import java.util.ArrayList;
 			}
 
 		}// end search()
-
+		
+		/**
+		Adds a button name to the suggestBox JComboBox 
+		if the button name starts with the text inside the searchBar JTextField.
+		*/
 		public void showOptions() {
 			setAdjusting(suggestBox, true);
 			suggestBoxModel.removeAllElements();
@@ -172,7 +196,14 @@ import java.util.ArrayList;
 			suggestBox.setPopupVisible(suggestBoxModel.getSize() > 0);
 			setAdjusting(suggestBox, false);
 		}// end showOptions()
-
+		
+		/**
+		Listens for the Enter, Up Arrow, Down Arrow, and Escape keystrokes.
+		If Enter is pressed, a search runs for the selection made.
+		If Escape is pressed, the suggestBox JComboBox is closed.
+		If the Up Arrow or Down Arrow are pressed, the selected item in the suggestBox JComboBox
+		is moved up or down one.
+		*/
 		class SearchBarKeyListener extends KeyAdapter {
 
 			public void keyPressed(KeyEvent event) {
@@ -197,7 +228,11 @@ import java.util.ArrayList;
 			}
 
 		}// end SearchBarListener
-
+		
+		/**
+		Listens for keystrokes in the searchBar JTextField.
+		Fires the suggestBox JComboBox to list relevent options.
+		*/
 		class SearchBarDocumentListener implements DocumentListener {
 
 			public void changedUpdate(DocumentEvent e) {
@@ -213,7 +248,11 @@ import java.util.ArrayList;
 			}
 
 		}// end SearchBarDocumentListener
-
+		
+		/**
+		Listens for a selection from the suggestBox JComboBox.
+		Inserts this selection into the searchBar JTextField.
+		*/
 		class AutoCompleteListener implements ActionListener {
 
 			public void actionPerformed(ActionEvent event) {
@@ -223,7 +262,10 @@ import java.util.ArrayList;
 			}
 
 		}// end SearchBarListener
-
+		
+		/**
+		Runs the go method to create a new AutoComplete window.
+		*/
 		public static void main(String[] args) {
 			AutoComplete a = new AutoComplete();
 			a.go();
