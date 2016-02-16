@@ -37,14 +37,14 @@ import java.util.ArrayList;
 		final DefaultComboBoxModel suggestBoxModel = new DefaultComboBoxModel();
 		final JComboBox suggestBox = new JComboBox(suggestBoxModel);
 		static final ArrayList<String> optionsList = new ArrayList<String>();
-		static final ArrayList<JButton> buttonList = new ArrayList<JButton>();
-		static final JButton ABALONE = new JButton("Abalone");
-		static final JButton APPLEPIE = new JButton("Apple Pie");
-		static final JButton APPLES = new JButton("apples");
-		static final JButton BILGE = new JButton("Bilge");
-		static final JButton CARTOONS = new JButton("Cartoons");
-		static final JButton CRUSTY = new JButton("crusty");
-		static final JButton CZECH = new JButton("Czechoslovakia");
+	    // static final ArrayList<JButton> buttonList = new ArrayList<JButton>();
+	    // static final JButton ABALONE = new JButton("Abalone");
+	    // 	static final JButton APPLEPIE = new JButton("Apple Pie");
+	    // 	static final JButton APPLES = new JButton("apples");
+	    // 	static final JButton BILGE = new JButton("Bilge");
+	    // 	static final JButton CARTOONS = new JButton("Cartoons");
+	    // 	static final JButton CRUSTY = new JButton("crusty");
+	    // 	static final JButton CZECH = new JButton("Czechoslovakia");
 
 		static {
 			optionsList.add("Abalone");
@@ -55,13 +55,13 @@ import java.util.ArrayList;
 			optionsList.add("crusty");
 			optionsList.add("Czechoslovakia");
 
-			buttonList.add(ABALONE);
-			buttonList.add(APPLEPIE);
-			buttonList.add(APPLES);
-			buttonList.add(BILGE);
-			buttonList.add(CARTOONS);
-			buttonList.add(CRUSTY);
-			buttonList.add(CZECH);
+			// buttonList.add(ABALONE);
+			// buttonList.add(APPLEPIE);
+			// buttonList.add(APPLES);
+			// buttonList.add(BILGE);
+			// buttonList.add(CARTOONS);
+			// buttonList.add(CRUSTY);
+			// buttonList.add(CZECH);
 		}
 		/**
 		Checks to see if a JComboBox is adjusting, meaning there is a change being made to it.
@@ -70,10 +70,10 @@ import java.util.ArrayList;
 		*/
 
 		private static boolean isAdjusting(JComboBox cb) {
-        	if (cb.getClientProperty("is_adjusting") instanceof Boolean) {
-            	return ((Boolean) cb.getClientProperty("is_adjusting"));
-        	}
-        	return false;
+		    if (cb.getClientProperty("is_adjusting") instanceof Boolean) {
+			return ((Boolean) cb.getClientProperty("is_adjusting"));
+		    }
+		    return false;
 		}
 		/**
 		Gives a JComboBox the property "is_adjusting" if not already created and sets it to true or false.
@@ -113,10 +113,10 @@ import java.util.ArrayList;
 			southPanel.setLayout(new BoxLayout(southPanel, BoxLayout.Y_AXIS));
 
 			// Prepare buttons
-			for(JButton b : buttonList) {
-				b.setPreferredSize(new Dimension((30 + 10*b.getText().length()), 20));
-				bottomPanel.add(b);
-			}
+			// for(JButton b : buttonList) {
+			// 	b.setPreferredSize(new Dimension((30 + 10*b.getText().length()), 20));
+			// 	bottomPanel.add(b);
+			// }
 			// Add Listeners
 			searchBar.addKeyListener(new SearchBarKeyListener());
 			searchBar.getDocument().addDocumentListener(new SearchBarDocumentListener());
@@ -168,11 +168,11 @@ import java.util.ArrayList;
 		public void search() {
 			String query = searchBar.getText();
 
-			for(JButton button : buttonList) {
-				if(query.equals(button.getText())) {
-					button.doClick();
-				}
-			}
+			// for(JButton button : buttonList) {
+			// 	if(query.equals(button.getText())) {
+			// 		button.doClick();
+			// 	}
+			// }
 
 		}// end search()
 		
