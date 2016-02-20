@@ -12,9 +12,15 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.imageio.ImageIO;
 import javax.swing.*;
+import javax.swing.text.Highlighter;
+import javax.swing.text.Highlighter.HighlightPainter;
 import javax.swing.event.*;
 import java.awt.Dimension;
 import java.util.ArrayList;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.DefaultHighlighter;
+import javax.swing.text.Highlighter;
+import javax.swing.text.Highlighter.HighlightPainter;
 
 
 /**
@@ -34,22 +40,19 @@ public class AutoComplete {
     JLabel optionsLabel = new JLabel("Options:");
     JTextField searchBar = new JTextField(20);
     JLabel searchBarLabel = new JLabel("Search:");
+    JButton nextButton = new JButton("next");
+    JButton preButton = new JButton("prev");
     final DefaultComboBoxModel suggestBoxModel = new DefaultComboBoxModel();
     final JComboBox suggestBox = new JComboBox(suggestBoxModel);
     static final ArrayList<String> optionsList = new ArrayList<String>();
     JTextArea text_area = new JTextArea(10, 30);
     JScrollPane sp = new JScrollPane(text_area);
+    int start =0;
+    int end =0;
+    ArrayList<Integer> starts = new ArrayList<Integer>();
+    int currentIndex = 0;
+    int wordSize = 0;
 
-	static {
-	optionsList.add("Abalone");
-	optionsList.add("Apple Pie");
-	optionsList.add("apples");
-	optionsList.add("Bilge");
-	optionsList.add("Cartoons");
-	optionsList.add("crusty");
-	optionsList.add("Czechoslovakia");
-
-    }
     /**
        Checks to see if a JComboBox is adjusting, meaning there is a change being made to it.
        @param cb A JComboBox used as the suggestions list
@@ -71,6 +74,8 @@ public class AutoComplete {
     private static void setAdjusting(JComboBox cb, boolean tof) {
 	cb.putClientProperty("is_adjusting", tof);
     }
+
+    
 		
     /**
        Prepares all the widgets, panels, buttons, and listeners for the AutoComplete window.
@@ -85,6 +90,9 @@ public class AutoComplete {
 			+ "Cartoons \n"
 			+ "crusty \n"
 			+ "Czechoslovakia");
+	//add ActionListener for NextButton and PrevButton
+	nextButton.addActionListener(new NextListener());
+	preButton.addActionListener(new PreListener());
 
 	// Prepare widgets
 	frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -96,7 +104,7 @@ public class AutoComplete {
 	// Prepare panels
 	midPanel.setLayout(new BoxLayout(midPanel, BoxLayout.X_AXIS));
 	leftPanel.setLayout(new BoxLayout(leftPanel, BoxLayout.Y_AXIS));
-	rightPanel.setLayout(new BoxLayout(rightPanel, BoxLayout.Y_AXIS));
+	rightPanel.setLayout(new BoxLayout(rightPanel, BoxLayout.X_AXIS));
 	southPanel.setLayout(new BoxLayout(southPanel, BoxLayout.Y_AXIS));
 
 	// Prepare buttons
@@ -124,6 +132,8 @@ public class AutoComplete {
 	rightPanel.setSize(250, 150);
 	rightPanel.add(searchBarLabel);
 	rightPanel.add(searchBar);
+	rightPanel.add(preButton);
+	rightPanel.add(nextButton);
 	bottomPanel.setBackground(Color.WHITE);
 	bottomPanel.setSize(800, 20);
 	bottomPanel.add(sp);
@@ -138,7 +148,7 @@ public class AutoComplete {
 	frame.getContentPane().add(BorderLayout.CENTER, midPanel);
 	frame.getContentPane().add(BorderLayout.SOUTH, southPanel);
 	frame.setBackground(Color.WHITE);
-	frame.setSize(820, 400);
+	frame.setSize(1120, 400);
 	frame.setVisible(true);
 
     }// end go()
@@ -147,8 +157,47 @@ public class AutoComplete {
        Sets the text inside the searchBar JTextField to the selected item in the suggestBox JComboBox.
     */
     public void autoComplete() {
-	searchBar.setText(suggestBox.getSelectedItem().toString());
-	suggestBox.setPopupVisible(false);			
+	starts.clear();
+	start =0;
+	end =0;
+	String s = suggestBox.getSelectedItem().toString();
+	wordSize = s.length();
+	searchBar.setText(s);
+	suggestBox.setPopupVisible(false);
+	String all_text = text_area.getText();
+	int size = all_text.length();
+	String temp = "";
+	 for(int i = 0; i < size; i++){
+	     if (all_text.charAt(i) != ' ' && all_text.charAt(i) != '\n'){
+	 	temp += all_text.charAt(i);
+	     }
+	     else{
+	 	if(temp != ""){
+	 	    if(temp.equals(s)){
+			starts.add(start);
+	 		end = i;
+		    }
+	 	    temp = "";		    
+	 	}
+		start = i+1;
+	     }
+      
+	 }
+	  if(temp.equals(s)){
+	      starts.add(start);
+	  }
+	try {
+	    text_area.getHighlighter().removeAllHighlights();
+	    Highlighter highlighter = text_area.getHighlighter();
+	    HighlightPainter painter = new DefaultHighlighter.DefaultHighlightPainter(Color.pink);
+	    highlighter.addHighlight(starts.get(0), starts.get(0)+wordSize, painter);
+	    Rectangle viewRect = text_area.modelToView(starts.get(0));
+	    text_area.scrollRectToVisible(viewRect);
+	    text_area.setCaretPosition(starts.get(0)+wordSize);
+	    text_area.moveCaretPosition(starts.get(0));
+	}
+	catch(BadLocationException ex){
+	}
     }
     /**
        Checks to see if the text inside the searchBar JTextField is equal to any of the buttons.
@@ -252,6 +301,53 @@ public class AutoComplete {
 
     }// End SearchBarListener
 
+    //listener for next
+    class NextListener implements ActionListener{
+	public void actionPerformed(ActionEvent event){
+	    if(currentIndex<(starts.size()-1)){
+		currentIndex+=1;
+		try {
+		    text_area.getHighlighter().removeAllHighlights();
+		    Highlighter highlighter = text_area.getHighlighter();
+		    HighlightPainter painter = new DefaultHighlighter.DefaultHighlightPainter(Color.pink);
+		    highlighter.addHighlight(starts.get(currentIndex), starts.get(currentIndex)+wordSize, painter);
+		    Rectangle viewRect = text_area.modelToView(starts.get(currentIndex));
+		    text_area.scrollRectToVisible(viewRect);
+		    text_area.setCaretPosition(starts.get(currentIndex)+wordSize);
+		    text_area.moveCaretPosition(starts.get(currentIndex));
+		}
+		catch(BadLocationException ex){
+		    
+		}
+	    }
+	}
+
+    }
+
+    //listener for pre
+    class PreListener implements ActionListener{
+	public void actionPerformed(ActionEvent event){
+	    if(currentIndex>0){
+		currentIndex-=1;
+		try {
+		    text_area.getHighlighter().removeAllHighlights();
+		    Highlighter highlighter = text_area.getHighlighter();
+		    HighlightPainter painter = new DefaultHighlighter.DefaultHighlightPainter(Color.pink);
+		    highlighter.addHighlight(starts.get(currentIndex), starts.get(currentIndex)+wordSize, painter);
+		    Rectangle viewRect = text_area.modelToView(starts.get(currentIndex));
+		    text_area.scrollRectToVisible(viewRect);
+		    text_area.setCaretPosition(starts.get(currentIndex)+wordSize);
+		    text_area.moveCaretPosition(starts.get(currentIndex));
+		}
+		catch(BadLocationException ex){
+		    
+		}
+	    }
+	}
+
+    }
+    
+
     class MyTextListener implements DocumentListener{
 
 	public void changedUpdate(DocumentEvent event){
@@ -264,13 +360,13 @@ public class AutoComplete {
 		    temp += s.charAt(i);
 		}
 		else{
-		    if(temp != ""){
+		    if(temp != ""&&optionsList.contains(temp)!=true){
 			optionsList.add(temp);
 			temp = "";
 		    }
 		}
 	    }
-	    if(temp != ""){
+	    if(temp != ""&&optionsList.contains(temp)!=true){
 		optionsList.add(temp);
 	    }
 	}
@@ -284,13 +380,13 @@ public class AutoComplete {
 		    temp += s.charAt(i);
 		}
 		else{
-		    if(temp != ""){
+		    if(temp != ""&&optionsList.contains(temp)!=true){
 			optionsList.add(temp);
 			temp = "";
 		    }
 		}
 	    }
-	    if(temp != ""){
+	    if(temp != ""&&optionsList.contains(temp)!=true){
 		optionsList.add(temp);
 	    }
 	}
@@ -305,13 +401,13 @@ public class AutoComplete {
 		    temp += s.charAt(i);
 		}
 		else{
-		    if(temp != ""){
+		    if(temp != ""&&optionsList.contains(temp)!=true){
 			optionsList.add(temp);
 			temp = "";
 		    }
 		}
 	    }
-	    if(temp != ""){
+	    if(temp != ""&&optionsList.contains(temp)!=true){
 		optionsList.add(temp);
 	    }
 	}
