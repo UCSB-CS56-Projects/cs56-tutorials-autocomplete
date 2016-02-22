@@ -203,6 +203,8 @@ public class AutoComplete {
        Checks to see if the text inside the searchBar JTextField is equal to any of the buttons.
        If this text matches a button, that button is clicked.
     */
+
+    
     public void search() {
 	String query = searchBar.getText();
 
@@ -222,11 +224,39 @@ public class AutoComplete {
 	setAdjusting(suggestBox, true);
 	suggestBoxModel.removeAllElements();
 	String query = searchBar.getText();
-
+	String text = text_area.getText();
+	FreqSuggest all_suggests = new FreqSuggest(text);
+	Hashtable<String, ArrayList<FollowFreq>> table = all_suggests.GetTable();
+	// Enumeration<String> keys = table.keys();
+	// while(keys.hasMoreElements()){
+	//     System.out.println(keys.nextElement());
+	//     System.out.println(table.get(keys.nextElement()));
+	// }
+	boolean flag = false;
+	String current = "";
+	String input = "";
+	int max = 0;
 	if(!query.isEmpty()) {
 	    for(String item : optionsList) {
-		if(item.toLowerCase().startsWith(query.toLowerCase())) {
+		if(item.toLowerCase().startsWith(query.toLowerCase())) 
 		    suggestBoxModel.addElement(item);
+	    }
+	    
+	    char last = query.charAt(query.length()-1);
+	    if (last == ' '){
+		for(int i = query.length() - 2; i >= 0 && query.charAt(i) != ' '; i--)
+		    current = String.valueOf(query.charAt(i)).concat(current);
+		if(!current.equals("")){
+		    if(table.containsKey(current)){
+			for(FollowFreq f: table.get(current)){
+			    if(input.equals("") || f.freq > max){
+				input = f.word;
+				max = f.freq;
+			    }
+			}
+			optionsList.add(input);
+			suggestBoxModel.addElement(input);
+		    }
 		}
 	    }
 	}
@@ -422,3 +452,63 @@ public class AutoComplete {
 	a.go();
     }
 }
+
+class FollowFreq{
+    public String word;
+    public int freq;
+    
+    public FollowFreq(){word = ""; freq = 0;}
+    public FollowFreq(String word, int freq){ this.word = word; this.freq = freq;}
+    
+};
+
+class FreqSuggest{
+    private Hashtable<String, ArrayList<FollowFreq>> freq_suggest;
+    
+    public FreqSuggest(String input){
+	freq_suggest = new Hashtable<String, ArrayList<FollowFreq>>();
+	String front = "";
+	String back = "";
+	
+	for(int i = 0; i < input.length(); i++){
+	    if(input.charAt(i) != ' ' && input.charAt(i) != '\n')
+		back += input.charAt(i);
+	    else{
+		//System.out.print(back);
+		if(!front.equals("")){
+		    if(freq_suggest.containsKey(front)){
+			boolean flag = false;
+			ArrayList<FollowFreq> temp = freq_suggest.get(front);
+			for(FollowFreq f: temp){
+			    if(f.word.equals(back)){
+				flag = true;
+				f.freq ++;
+				break;
+			    }
+			}
+			if(!flag)
+			    temp.add(new FollowFreq(back, 1));
+			
+			freq_suggest.put(front, temp);
+			
+		    }
+		    else{
+			ArrayList<FollowFreq> temp = new ArrayList<FollowFreq>();
+			temp.add( new FollowFreq(back, 1));
+			//System.out.println(temp);
+			freq_suggest.put(front, temp);
+			//System.out.println(freq_suggest.get(front));
+		    }
+		}
+		//System.out.println(temp);
+		front = back;
+		back = "";	
+	    }
+	}
+	//	    for(String s: freq_suggest.keys()){
+	//		ArrayList<FollowFreq> temp = java.Collectoins.sort(freq_suggest.get(s));
+	//	freq_suggest.put(s, temp);
+	
+    }
+    public Hashtable<String, ArrayList<FollowFreq>> GetTable(){ return this.freq_suggest;}
+};
