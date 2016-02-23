@@ -49,9 +49,14 @@ public class AutoComplete {
     JScrollPane sp = new JScrollPane(text_area);
     int start =0;
     int end =0;
+    //all of the start index of s's full text
     ArrayList<Integer> starts = new ArrayList<Integer>();
     int currentIndex = 0;
     int wordSize = 0;
+    //first word of s
+    String first = "";
+    //record the index of the first word of the s
+    ArrayList<Integer> firstWordIndex = new ArrayList<Integer>();
 
     /**
        Checks to see if a JComboBox is adjusting, meaning there is a change being made to it.
@@ -157,11 +162,22 @@ public class AutoComplete {
        Sets the text inside the searchBar JTextField to the selected item in the suggestBox JComboBox.
     */
     public void autoComplete() {
+	first = "";
 	starts.clear();
 	start =0;
 	end =0;
 	String s = suggestBox.getSelectedItem().toString();
 	wordSize = s.length();
+
+	//get the first word
+	for(int i =0; i<wordSize; i++){
+	    char tmp = s.charAt(i);
+	    if(tmp!=' '&& tmp!='\n' && tmp!='\t')
+		first+=tmp;
+	    else
+		break;
+	}
+	
 	searchBar.setText(s);
 	suggestBox.setPopupVisible(false);
 	String all_text = text_area.getText();
@@ -173,8 +189,8 @@ public class AutoComplete {
 	     }
 	     else{
 	 	if(temp != ""){
-	 	    if(temp.equals(s)){
-			starts.add(start);
+	 	    if(temp.equals(first)){
+			firstWordIndex.add(start);
 	 		end = i;
 		    }
 	 	    temp = "";		    
@@ -183,9 +199,30 @@ public class AutoComplete {
 	     }
       
 	 }
-	  if(temp.equals(s)){
-	      starts.add(start);
+	  if(temp.equals(first)){
+	      firstWordIndex.add(start);
 	  }
+
+	  //size of the firstWordIndex
+	  int firstSize = firstWordIndex.size();
+	  boolean sameText = true;
+	  for(int i =0; i<firstSize; i++){
+	      sameText = true;
+	      int startPoint = firstWordIndex.get(i);
+	      for(int j=0; j<wordSize; j++){
+		  if((j+startPoint)>=size)
+		      break;
+		  if(all_text.charAt(j+startPoint) !=s.charAt(j)){
+		      sameText = false;
+		      break;
+		  }
+	      }
+	      if(sameText)
+		  starts.add(firstWordIndex.get(i));
+	  }
+	  
+	  if(starts.size()==0)
+	      return;
 	try {
 	    text_area.getHighlighter().removeAllHighlights();
 	    Highlighter highlighter = text_area.getHighlighter();
@@ -223,15 +260,11 @@ public class AutoComplete {
     public void showOptions() {
 	setAdjusting(suggestBox, true);
 	suggestBoxModel.removeAllElements();
+	optionsList.clear();
 	String query = searchBar.getText();
 	String text = text_area.getText();
 	FreqSuggest all_suggests = new FreqSuggest(text);
 	Hashtable<String, ArrayList<FollowFreq>> table = all_suggests.GetTable();
-	// Enumeration<String> keys = table.keys();
-	// while(keys.hasMoreElements()){
-	//     System.out.println(keys.nextElement());
-	//     System.out.println(table.get(keys.nextElement()));
-	// }
 	boolean flag = false;
 	String current = "";
 	String input = "";
@@ -244,7 +277,7 @@ public class AutoComplete {
 	    
 	    char last = query.charAt(query.length()-1);
 	    if (last == ' '){
-		for(int i = query.length() - 2; i >= 0 && query.charAt(i) != ' '; i--)
+       	for(int i = query.length() - 2; i >= 0 && query.charAt(i) != ' '; i--)
 		    current = String.valueOf(query.charAt(i)).concat(current);
 		if(!current.equals("")){
 		    if(table.containsKey(current)){
@@ -254,8 +287,8 @@ public class AutoComplete {
 				max = f.freq;
 			    }
 			}
-			optionsList.add(input);
-			suggestBoxModel.addElement(input);
+			optionsList.add(query + input);
+			suggestBoxModel.addElement(query + input);
 		    }
 		}
 	    }
@@ -392,13 +425,14 @@ public class AutoComplete {
 		else{
 		    if(temp != ""&&optionsList.contains(temp)!=true){
 			optionsList.add(temp);
-			temp = "";
 		    }
+		    temp = "";
 		}
 	    }
 	    if(temp != ""&&optionsList.contains(temp)!=true){
 		optionsList.add(temp);
 	    }
+	    temp = "";
 	}
 	public void insertUpdate(DocumentEvent event){
 	    optionsList.clear();
@@ -412,13 +446,14 @@ public class AutoComplete {
 		else{
 		    if(temp != ""&&optionsList.contains(temp)!=true){
 			optionsList.add(temp);
-			temp = "";
 		    }
+		    temp = "";
 		}
 	    }
 	    if(temp != ""&&optionsList.contains(temp)!=true){
 		optionsList.add(temp);
 	    }
+	    temp = "";
 	}
 
 	public void removeUpdate(DocumentEvent event){
@@ -433,13 +468,14 @@ public class AutoComplete {
 		else{
 		    if(temp != ""&&optionsList.contains(temp)!=true){
 			optionsList.add(temp);
-			temp = "";
 		    }
+		    temp = "";
 		}
 	    }
 	    if(temp != ""&&optionsList.contains(temp)!=true){
 		optionsList.add(temp);
 	    }
+	    temp = "";
 	}
 
     }
@@ -453,62 +489,62 @@ public class AutoComplete {
     }
 }
 
-class FollowFreq{
-    public String word;
-    public int freq;
+// class FollowFreq{
+//     public String word;
+//     public int freq;
     
-    public FollowFreq(){word = ""; freq = 0;}
-    public FollowFreq(String word, int freq){ this.word = word; this.freq = freq;}
+//     public FollowFreq(){word = ""; freq = 0;}
+//     public FollowFreq(String word, int freq){ this.word = word; this.freq = freq;}
     
-};
+// };
 
-class FreqSuggest{
-    private Hashtable<String, ArrayList<FollowFreq>> freq_suggest;
+// class FreqSuggest{
+//     private Hashtable<String, ArrayList<FollowFreq>> freq_suggest;
     
-    public FreqSuggest(String input){
-	freq_suggest = new Hashtable<String, ArrayList<FollowFreq>>();
-	String front = "";
-	String back = "";
+//     public FreqSuggest(String input){
+// 	freq_suggest = new Hashtable<String, ArrayList<FollowFreq>>();
+// 	String front = "";
+// 	String back = "";
 	
-	for(int i = 0; i < input.length(); i++){
-	    if(input.charAt(i) != ' ' && input.charAt(i) != '\n')
-		back += input.charAt(i);
-	    else{
-		//System.out.print(back);
-		if(!front.equals("")){
-		    if(freq_suggest.containsKey(front)){
-			boolean flag = false;
-			ArrayList<FollowFreq> temp = freq_suggest.get(front);
-			for(FollowFreq f: temp){
-			    if(f.word.equals(back)){
-				flag = true;
-				f.freq ++;
-				break;
-			    }
-			}
-			if(!flag)
-			    temp.add(new FollowFreq(back, 1));
+// 	for(int i = 0; i < input.length(); i++){
+// 	    if(input.charAt(i) != ' ' && input.charAt(i) != '\n')
+// 		back += input.charAt(i);
+// 	    else{
+// 		//System.out.print(back);
+// 		if(!front.equals("")){
+// 		    if(freq_suggest.containsKey(front)){
+// 			boolean flag = false;
+// 			ArrayList<FollowFreq> temp = freq_suggest.get(front);
+// 			for(FollowFreq f: temp){
+// 			    if(f.word.equals(back)){
+// 				flag = true;
+// 				f.freq ++;
+// 				break;
+// 			    }
+// 			}
+// 			if(!flag)
+// 			    temp.add(new FollowFreq(back, 1));
 			
-			freq_suggest.put(front, temp);
+// 			freq_suggest.put(front, temp);
 			
-		    }
-		    else{
-			ArrayList<FollowFreq> temp = new ArrayList<FollowFreq>();
-			temp.add( new FollowFreq(back, 1));
-			//System.out.println(temp);
-			freq_suggest.put(front, temp);
-			//System.out.println(freq_suggest.get(front));
-		    }
-		}
-		//System.out.println(temp);
-		front = back;
-		back = "";	
-	    }
-	}
-	//	    for(String s: freq_suggest.keys()){
-	//		ArrayList<FollowFreq> temp = java.Collectoins.sort(freq_suggest.get(s));
-	//	freq_suggest.put(s, temp);
+// 		    }
+// 		    else{
+// 			ArrayList<FollowFreq> temp = new ArrayList<FollowFreq>();
+// 			temp.add( new FollowFreq(back, 1));
+// 			//System.out.println(temp);
+// 			freq_suggest.put(front, temp);
+// 			//System.out.println(freq_suggest.get(front));
+// 		    }
+// 		}
+// 		//System.out.println(temp);
+// 		front = back;
+// 		back = "";	
+// 	    }
+// 	}
+// 	//	    for(String s: freq_suggest.keys()){
+// 	//		ArrayList<FollowFreq> temp = java.Collectoins.sort(freq_suggest.get(s));
+// 	//	freq_suggest.put(s, temp);
 	
-    }
-    public Hashtable<String, ArrayList<FollowFreq>> GetTable(){ return this.freq_suggest;}
-};
+//     }
+//     public Hashtable<String, ArrayList<FollowFreq>> GetTable(){ return this.freq_suggest;}
+// };
