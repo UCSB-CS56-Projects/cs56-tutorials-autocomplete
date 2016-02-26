@@ -260,7 +260,7 @@ public class AutoComplete {
     public void showOptions() {
 	setAdjusting(suggestBox, true);
 	suggestBoxModel.removeAllElements();
-	optionsList.clear();
+	//optionsList.clear();
 	String query = searchBar.getText();
 	String text = text_area.getText();
 	FreqSuggest all_suggests = new FreqSuggest(text);
