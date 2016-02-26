@@ -57,6 +57,7 @@ public class AutoComplete {
     String first = "";
     //record the index of the first word of the s
     ArrayList<Integer> firstWordIndex = new ArrayList<Integer>();
+    boolean isadded = false;
 
     /**
        Checks to see if a JComboBox is adjusting, meaning there is a change being made to it.
@@ -269,6 +270,7 @@ public class AutoComplete {
 	String current = "";
 	String input = "";
 	int max = 0;
+
 	if(!query.isEmpty()) {
 	    for(String item : optionsList) {
 		if(item.toLowerCase().startsWith(query.toLowerCase())) 
@@ -277,7 +279,7 @@ public class AutoComplete {
 	    
 	    char last = query.charAt(query.length()-1);
 	    if (last == ' '){
-       	for(int i = query.length() - 2; i >= 0 && query.charAt(i) != ' '; i--)
+		for(int i = query.length() - 2; i >= 0 && query.charAt(i) != ' '; i--)
 		    current = String.valueOf(query.charAt(i)).concat(current);
 		if(!current.equals("")){
 		    if(table.containsKey(current)){
@@ -286,6 +288,12 @@ public class AutoComplete {
 				input = f.word;
 				max = f.freq;
 			    }
+			}
+			if(isadded == false)
+			    isadded = true;
+			else{
+			    optionsList.remove(optionsList.size()-1);
+			    suggestBoxModel.removeElement(query + input);
 			}
 			optionsList.add(query + input);
 			suggestBoxModel.addElement(query + input);
@@ -415,6 +423,7 @@ public class AutoComplete {
 
 	public void changedUpdate(DocumentEvent event){
 	    optionsList.clear();
+	    isadded = false;
 	    String s = text_area.getText();
 	    int size = s.length();
 	    String temp = "";
@@ -436,6 +445,7 @@ public class AutoComplete {
 	}
 	public void insertUpdate(DocumentEvent event){
 	    optionsList.clear();
+	    isadded = false;
 	    String s = text_area.getText();
 	    int size = s.length();
 	    String temp = "";
@@ -458,6 +468,7 @@ public class AutoComplete {
 
 	public void removeUpdate(DocumentEvent event){
 	    optionsList.clear();
+	    isadded = false;
 	    String s = text_area.getText();
 	    int size = s.length();
 	    String temp = "";
