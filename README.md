@@ -44,3 +44,19 @@ Only one AutoComplete class written:
 		Using a JComboBox under the JTextField by setting the height to 0
 		is_adjusting property to avoid runtime erros
 		Cleaner GUI programming practices
+		
+
+W16 Final Remark
+===========================
+	Here is what we have done for this project
+	1.separate it into a couple of classes
+	2.make it like a real auto-complete on websites
+	3.add a text area that makes it like a text searcher
+ 	4.add navigation arrows
+	5.can search multiple words
+	6.auto-suggest the next word that is most likely to follow the previous word
+	
+	We added two files named FollowFreq.java and FreqSuggest.java to implement the frequency suggestion feature.
+	There still are some problems about this feature such as it only suggest the most frequent word and you are
+	going to fix it as an issue. Overall not a very fun project but you can learn a lot from it. ps: other
+	projects seem worse.
